@@ -1126,24 +1126,41 @@ img {
         flex: 1;
         padding: 1rem 0;
         text-align: center;
-        background: none;
         border: none;
-        border-right: 1px solid var(--color-border);
         font-family: var(--font-body);
         font-size: 0.85rem;
-        color: var(--color-text);
+        font-weight: 500;
+        color: var(--color-white);
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.3rem;
+        transition: opacity 0.3s ease;
     }
 
+    .mobile-bottom-bar a:active,
+    .mobile-bottom-bar button:active {
+        opacity: 0.8;
+    }
+
+    /* Call Button */
+    .mobile-bottom-bar a:nth-child(1) {
+        background-color: #1976D2;
+    }
+
+    /* WhatsApp Button */
+    .mobile-bottom-bar a:nth-child(2) {
+        background-color: #25D366;
+    }
+
+    /* Book Visit Button */
     .mobile-bottom-bar button {
-        border-right: none;
+        background-color: var(--color-accent);
     }
 
     .mobile-bottom-bar i {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
+        margin-bottom: -2px;
     }
 }
 
