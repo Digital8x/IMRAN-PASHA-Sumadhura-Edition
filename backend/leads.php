@@ -98,35 +98,57 @@ if ($action === 'submit') {
             $emailBody = "New Lead from Sumadhura Edition:\n\nName: $name\nPhone: $phone\nEmail: $email\nInterest: $bhk\nSource: $source\nMessage:\n$message";
 
             if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-                $mail = new PHPMailer(true);
-                try {
-                    // Server settings
-                    $mail->isSMTP();
-                    $mail->Host       = getenv('SMTP_HOST');
-                    $mail->SMTPAuth   = true;
-                    $mail->Username   = getenv('SMTP_USER');
-                    $mail->Password   = getenv('SMTP_PASS');
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port       = getenv('SMTP_PORT') ?: 587;
+                $smtp_host = getenv('SMTP_HOST');
+                $smtp_user = getenv('SMTP_USER');
+                $smtp_pass = getenv('SMTP_PASS');
+                
+                if (empty($smtp_host) || empty($smtp_user) || empty($smtp_pass)) {
+                    error_log("Mailer Error: Missing SMTP configuration in environment variables.");
+                } else {
+                    $mail = new PHPMailer(true);
+                    try {
+                        $smtp_port = getenv('SMTP_PORT') ?: 587;
+                        $smtp_secure = ($smtp_port == 465) ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
 
-                    // Recipients
-                    $mail->setFrom(getenv('SMTP_USER'), 'Sumadhura Edition');
-                    
-                    // Support multiple comma-separated emails
-                    $recipients = explode(',', $to_emails);
-                    foreach ($recipients as $recipient) {
-                        $mail->addAddress(trim($recipient));
+                        // Server settings
+                        $mail->isSMTP();
+                        $mail->Host       = $smtp_host;
+                        $mail->SMTPAuth   = true;
+                        $mail->Username   = $smtp_user;
+                        $mail->Password   = $smtp_pass;
+                        $mail->SMTPSecure = $smtp_secure;
+                        $mail->Port       = $smtp_port;
+
+                        // Recipients
+                        $mail->setFrom($smtp_user, 'Sumadhura Edition');
+                        
+                        // Support multiple comma-separated emails
+                        $valid_recipients = 0;
+                        if (!empty($to_emails) && is_string($to_emails)) {
+                            $recipients = explode(',', $to_emails);
+                            foreach ($recipients as $recipient) {
+                                $recipient = trim($recipient);
+                                if (!empty($recipient) && filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+                                    $mail->addAddress($recipient);
+                                    $valid_recipients++;
+                                }
+                            }
+                        }
+
+                        if ($valid_recipients > 0) {
+                            // Content
+                            $mail->isHTML(false);
+                            $mail->Subject = $subject;
+                            $mail->Body    = $emailBody;
+
+                            $mail->send();
+                        } else {
+                            error_log("Mailer Error: No valid recipient emails found in ADMIN_EMAIL.");
+                        }
+                    } catch (\Exception $e) {
+                        // Silently fail so user still sees success message (lead is in DB)
+                        error_log("Mailer Error: {$mail->ErrorInfo}");
                     }
-
-                    // Content
-                    $mail->isHTML(false);
-                    $mail->Subject = $subject;
-                    $mail->Body    = $emailBody;
-
-                    $mail->send();
-                } catch (\Exception $e) {
-                    // Silently fail so user still sees success message (lead is in DB)
-                    error_log("Mailer Error: {$mail->ErrorInfo}");
                 }
             } else {
                 // Fallback to basic mail if Composer isn't run yet
@@ -136,7 +158,8 @@ if ($action === 'submit') {
 
             echo json_encode(['success' => true, 'message' => 'Thank you! Our expert will contact you within 2 hours.']);
         } catch(PDOException $e) {
-            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+            error_log("Database Error: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Internal server error']);
         }
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
