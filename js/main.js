@@ -308,13 +308,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     statusDiv.classList.add('text-success');
                     form.reset();
                     
-                    // Unblur the floorplans upon successful submission!
-                    localStorage.setItem('leads_submitted', 'true');
-                    unlockFloorplans();
+                    // Only unlock floorplans if submission came from Floor Plan section
+                    const submittedSource = form.querySelector('[name="source"]')?.value || '';
+                    const lowerSource = submittedSource.toLowerCase();
+                    
+                    if (lowerSource.includes('floor') || lowerSource.includes('plan')) {
+                        localStorage.setItem('leads_submitted', 'true');
+                        unlockFloorplans();
+                    }
                     
                     // Only unlock/play video if submission came from Walkthrough
-                    const submittedSource = form.querySelector('[name="source"]')?.value || '';
-                    if (submittedSource.toLowerCase().includes('walkthrough') && typeof unlockVideo === 'function') {
+                    if (lowerSource.includes('walkthrough') && typeof unlockVideo === 'function') {
                         unlockVideo();
                     }
 
