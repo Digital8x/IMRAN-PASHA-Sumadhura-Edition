@@ -329,6 +329,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             statusDiv.textContent = '';
                         }, 3000);
                     }
+
+                    // Redirect to thank-you page after a short delay
+                    setTimeout(() => {
+                        window.location.href = 'thank-you.html';
+                    }, 1000);
                 } else {
                     statusDiv.textContent = result.message || 'Something went wrong. Please try again.';
                     statusDiv.classList.add('text-error');
