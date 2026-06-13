@@ -1,0 +1,7 @@
+{
+    "name": "digital8x/sumadhura-edition",
+    "description": "Sumadhura Edition Real Estate Project",
+    "require": {
+        "phpmailer/phpmailer": "^6.9"
+    }
+}
