@@ -122,30 +122,27 @@ if ($action === 'submit') {
                         // Recipients
                         $mail->setFrom($smtp_user, 'Sumadhura Edition');
                         
-                        // Use the sender email as the primary 'To' address to hide the real recipients
-                        $mail->addAddress($smtp_user, 'Admin Team');
-                        
-                        // Support multiple comma-separated emails (added as BCC to hide them)
+                        // Content setup
+                        $mail->isHTML(false);
+                        $mail->Subject = $subject;
+                        $mail->Body    = $emailBody;
+
+                        // Support multiple comma-separated emails by sending individually
                         $valid_recipients = 0;
                         if (!empty($to_emails) && is_string($to_emails)) {
                             $recipients = explode(',', $to_emails);
                             foreach ($recipients as $recipient) {
                                 $recipient = trim($recipient);
                                 if (!empty($recipient) && filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
-                                    $mail->addBCC($recipient);
+                                    $mail->clearAllRecipients(); // Clear previous recipients
+                                    $mail->addAddress($recipient); // Add current recipient
+                                    $mail->send(); // Send individually
                                     $valid_recipients++;
                                 }
                             }
                         }
 
-                        if ($valid_recipients > 0) {
-                            // Content
-                            $mail->isHTML(false);
-                            $mail->Subject = $subject;
-                            $mail->Body    = $emailBody;
-
-                            $mail->send();
-                        } else {
+                        if ($valid_recipients === 0) {
                             error_log("Mailer Error: No valid recipient emails found in ADMIN_EMAIL.");
                         }
                     } catch (\Exception $e) {
