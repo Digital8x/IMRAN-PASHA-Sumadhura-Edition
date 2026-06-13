@@ -311,7 +311,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Unblur the floorplans upon successful submission!
                     localStorage.setItem('leads_submitted', 'true');
                     unlockFloorplans();
-                    if (typeof unlockVideo === 'function') unlockVideo();
+                    
+                    // Only unlock/play video if submission came from Walkthrough
+                    const submittedSource = form.querySelector('[name="source"]')?.value || '';
+                    if (submittedSource.toLowerCase().includes('walkthrough') && typeof unlockVideo === 'function') {
+                        unlockVideo();
+                    }
 
                     // If modal, close after 3 seconds
                     if (form.id === 'modal-form') {
