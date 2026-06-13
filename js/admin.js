@@ -144,6 +144,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if(lead.status === 'Called') badgeClass = 'status-called';
                 if(lead.status === 'Closed') badgeClass = 'status-closed';
 
+                const getFlagEmoji = (countryCode) => {
+                    if (!countryCode) return '';
+                    const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
+                    return String.fromCodePoint(...codePoints);
+                };
+                
+                const emojiFlag = lead.country_code ? getFlagEmoji(lead.country_code) : (lead.country_flag || '');
+
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>
@@ -155,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td>${lead.bhk}</td>
                     <td>
                         <div>${lead.source}</div>
-                        ${lead.country_flag ? `<div style="font-size: 0.8rem; color: #666; margin-top: 0.2rem;"><span title="${lead.country}" style="font-size: 1rem;">${lead.country_flag}</span> ${lead.city ? lead.city : ''}</div>` : ''}
+                        ${emojiFlag ? `<div style="font-size: 0.8rem; color: #666; margin-top: 0.2rem;"><span title="${lead.country}" style="font-size: 1rem;">${emojiFlag}</span> ${lead.city ? lead.city : ''}</div>` : ''}
                     </td>
                     <td>${new Date(lead.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
                     <td><span class="status-badge ${badgeClass}">${lead.status}</span></td>

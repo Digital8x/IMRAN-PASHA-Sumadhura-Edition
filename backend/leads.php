@@ -149,13 +149,13 @@ if ($action === 'submit') {
             $stmt = $pdo->prepare("
                 INSERT INTO leads (
                     name, phone, email, bhk, message, source, status, 
-                    ip_address, city, country, country_code, country_flag, 
+                    ip_address, city, country, country_code, 
                     device_type, browser, user_agent, 
                     utm_source, utm_medium, utm_campaign, utm_term, utm_content, 
                     refer_url, page_url
                 ) VALUES (
                     :name, :phone, :email, :bhk, :message, :source, 'New',
-                    :ip_address, :city, :country, :country_code, :country_flag,
+                    :ip_address, :city, :country, :country_code,
                     :device_type, :browser, :user_agent,
                     :utm_source, :utm_medium, :utm_campaign, :utm_term, :utm_content,
                     :refer_url, :page_url
@@ -166,7 +166,7 @@ if ($action === 'submit') {
                 ':name' => $name, ':phone' => $phone, ':email' => $email,
                 ':bhk' => $bhk, ':message' => $message, ':source' => $source,
                 ':ip_address' => $ip, ':city' => $city, ':country' => $country, 
-                ':country_code' => $country_code, ':country_flag' => $country_flag,
+                ':country_code' => $country_code,
                 ':device_type' => $device_type, ':browser' => $browser, ':user_agent' => $user_agent,
                 ':utm_source' => $utm_source, ':utm_medium' => $utm_medium, ':utm_campaign' => $utm_campaign,
                 ':utm_term' => $utm_term, ':utm_content' => $utm_content,
@@ -240,7 +240,7 @@ if ($action === 'submit') {
             echo json_encode(['success' => true, 'message' => 'Thank you! Our expert will contact you within 2 hours.']);
         } catch(PDOException $e) {
             error_log("Database Error: " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'DB Error: ' . $e->getMessage()]);
+            echo json_encode(['success' => false, 'message' => 'Internal server error']);
         }
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
