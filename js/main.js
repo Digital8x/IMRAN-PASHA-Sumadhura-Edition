@@ -200,6 +200,21 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const source = trigger.getAttribute('data-source') || 'Universal CTA';
             if(modalSourceInput) modalSourceInput.value = source;
+            
+            // Auto-select BHK based on trigger button text or source
+            const bhkSelect = document.getElementById('modal-bhk-select');
+            if(bhkSelect) {
+                bhkSelect.value = '2 BHK'; // Default
+                const triggerText = trigger.textContent.toUpperCase();
+                const sourceUpper = source.toUpperCase();
+                
+                if (sourceUpper.includes('3 BHK') || triggerText.includes('3 BHK') || sourceUpper.includes('3BHK')) {
+                    bhkSelect.value = '3 BHK';
+                } else if (sourceUpper.includes('4 BHK') || triggerText.includes('4 BHK') || sourceUpper.includes('4BHK')) {
+                    bhkSelect.value = '4 BHK';
+                }
+            }
+
             if(leadModal) leadModal.classList.add('active');
         });
     });
