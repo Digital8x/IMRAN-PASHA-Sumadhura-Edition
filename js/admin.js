@@ -146,12 +146,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 tr.innerHTML = `
                     <td>${index + 1}</td>
-                    <td style="cursor:pointer; color:#1976d2; font-weight:500;" onclick="toggleMessage(${lead.id})">${lead.name}</td>
+                    <td>
+                        <div style="font-weight: 500;">${lead.name}</div>
+                        ${lead.message || lead.ip_address ? `<button style="background:none;border:none;color:var(--color-accent);font-size:0.75rem;cursor:pointer;padding:0;margin-top:0.2rem;" onclick="toggleMessage(${lead.id})">View Details</button>` : ''}
+                    </td>
                     <td>${lead.phone}</td>
                     <td>${lead.email}</td>
                     <td>${lead.bhk}</td>
-                    <td>${lead.source}</td>
-                    <td>${new Date(lead.timestamp).toLocaleString()}</td>
+                    <td>
+                        <div>${lead.source}</div>
+                        ${lead.country_flag ? `<div style="font-size: 0.8rem; color: #666; margin-top: 0.2rem;"><span title="${lead.country}" style="font-size: 1rem;">${lead.country_flag}</span> ${lead.city ? lead.city : ''}</div>` : ''}
+                    </td>
+                    <td>${new Date(lead.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
                     <td><span class="status-badge ${badgeClass}">${lead.status}</span></td>
                     <td>
                         <div class="actions-flex">
@@ -163,13 +169,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
                 leadsTbody.appendChild(tr);
 
-                // Hidden Message Row
-                if (lead.message) {
+                // Hidden Details Row
+                if (lead.message || lead.ip_address) {
                     const msgTr = document.createElement('tr');
                     msgTr.className = 'message-row';
                     msgTr.id = `msg-${lead.id}`;
+                    
+                    let trackingHtml = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; font-size: 0.85rem;">`;
+                    trackingHtml += `<div><strong>IP Address:</strong> ${lead.ip_address || 'N/A'}</div>`;
+                    trackingHtml += `<div><strong>Device:</strong> ${lead.device_type || 'N/A'}</div>`;
+                    trackingHtml += `<div><strong>Browser:</strong> ${lead.browser || 'N/A'}</div>`;
+                    trackingHtml += `<div><strong>Page URL:</strong> ${lead.page_url ? `<a href="${lead.page_url}" target="_blank" style="color:var(--color-accent);text-decoration:none;">Link</a>` : 'N/A'}</div>`;
+                    if (lead.utm_source) trackingHtml += `<div><strong>UTM Source:</strong> ${lead.utm_source}</div>`;
+                    if (lead.utm_campaign) trackingHtml += `<div><strong>UTM Campaign:</strong> ${lead.utm_campaign}</div>`;
+                    if (lead.refer_url) trackingHtml += `<div><strong>Referrer:</strong> <a href="${lead.refer_url}" target="_blank" style="color:var(--color-accent);text-decoration:none;">Link</a></div>`;
+                    trackingHtml += `</div>`;
+                    
                     msgTr.innerHTML = `
-                        <td colspan="9"><strong>Message:</strong> ${lead.message}</td>
+                        <td colspan="9">
+                            ${lead.message ? `<div style="margin-bottom: 0.8rem;"><strong>Message:</strong> ${lead.message}</div>` : ''}
+                            ${lead.ip_address ? `
+                                <div style="border-top:1px solid #e0e0e0; padding-top: 0.8rem;">
+                                    <strong style="color: var(--color-accent);">Advanced Tracking Data:</strong>
+                                    ${trackingHtml}
+                                </div>
+                            ` : ''}
+                        </td>
                     `;
                     leadsTbody.appendChild(msgTr);
                 }
@@ -245,11 +270,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Export CSV
         document.getElementById('export-btn').addEventListener('click', () => {
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "ID,Name,Phone,Email,BHK,Source,Message,Status,Date\n";
+            csvContent += "ID,Name,Phone,Email,BHK,Source,Message,Status,Date,IP,City,Country,Device,Browser,UTM Source,UTM Campaign,Referrer,Page URL\n";
 
             allLeads.forEach(row => {
-                const msg = row.message ? row.message.replace(/,/g, ' ') : ''; // escape commas
-                const line = `${row.id},${row.name},${row.phone},${row.email},${row.bhk},${row.source},${msg},${row.status},${row.timestamp}`;
+                const msg = row.message ? row.message.replace(/,/g, ' ').replace(/\n/g, ' ') : ''; 
+                const line = `${row.id},${row.name},${row.phone},${row.email},${row.bhk},${row.source},${msg},${row.status},${row.timestamp},${row.ip_address || ''},${row.city || ''},${row.country || ''},${row.device_type || ''},${row.browser || ''},${row.utm_source || ''},${row.utm_campaign || ''},${row.refer_url || ''},${row.page_url || ''}`;
                 csvContent += line + "\n";
             });
 

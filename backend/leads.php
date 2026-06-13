@@ -33,6 +33,16 @@ if ($action === 'submit') {
         $message = isset($_POST['message']) ? trim($_POST['message']) : '';
         $source = isset($_POST['source']) ? trim($_POST['source']) : 'Website Form';
         $honeypot = isset($_POST['website_url']) ? trim($_POST['website_url']) : '';
+        
+        // Advanced Tracking Vars
+        $utm_source = isset($_POST['utm_source']) ? trim($_POST['utm_source']) : '';
+        $utm_medium = isset($_POST['utm_medium']) ? trim($_POST['utm_medium']) : '';
+        $utm_campaign = isset($_POST['utm_campaign']) ? trim($_POST['utm_campaign']) : '';
+        $utm_term = isset($_POST['utm_term']) ? trim($_POST['utm_term']) : '';
+        $utm_content = isset($_POST['utm_content']) ? trim($_POST['utm_content']) : '';
+        $refer_url = isset($_POST['refer_url']) ? trim($_POST['refer_url']) : '';
+        $page_url = isset($_POST['page_url']) ? trim($_POST['page_url']) : '';
+        $project = isset($_POST['project']) ? trim($_POST['project']) : 'Sumadhura Edition';
 
         // 1. Honeypot Check (Bots)
         if (!empty($honeypot)) {
@@ -59,13 +69,57 @@ if ($action === 'submit') {
             }
         }
 
-        // 3. VPN / Proxy Check via ip-api.com
-        $ip = $_SERVER['REMOTE_ADDR'];
-        if ($ip !== '127.0.0.1' && $ip !== '::1') { // Skip localhost testing
-            $api_url = "http://ip-api.com/json/{$ip}?fields=status,proxy,hosting";
+        // --- Advanced Tracking Logic ---
+        
+        // IP Address
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+        if (strpos($ip, ',') !== false) {
+            $ip = explode(',', $ip)[0]; // Get first IP if multiple
+        }
+
+        // User Agent parsing
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $device_type = 'Desktop';
+        if (preg_match('/iPad/i', $user_agent)) {
+            $device_type = 'iPad / Tablet (iOS)';
+        } elseif (preg_match('/iPhone/i', $user_agent)) {
+            $device_type = 'iPhone (iOS)';
+        } elseif (preg_match('/Android.*Mobile/i', $user_agent)) {
+            $device_type = 'Android Mobile';
+        } elseif (preg_match('/Android/i', $user_agent)) {
+            $device_type = 'Android Tablet';
+        } elseif (preg_match('/Macintosh/i', $user_agent)) {
+            $device_type = 'Mac Desktop';
+        } elseif (preg_match('/Windows/i', $user_agent)) {
+            $device_type = 'Windows Desktop';
+        }
+
+        $browser = 'Other';
+        if (preg_match('/SamsungBrowser/i', $user_agent)) {
+            $browser = 'Samsung Internet';
+        } elseif (preg_match('/Edge|Edg/i', $user_agent)) {
+            $browser = 'Edge';
+        } elseif (preg_match('/OPR|Opera/i', $user_agent)) {
+            $browser = 'Opera';
+        } elseif (preg_match('/Chrome/i', $user_agent)) {
+            $browser = 'Chrome';
+        } elseif (preg_match('/Firefox/i', $user_agent)) {
+            $browser = 'Firefox';
+        } elseif (preg_match('/Safari/i', $user_agent)) {
+            $browser = 'Safari';
+        }
+
+        // Geo Location
+        $city = '';
+        $country = '';
+        $country_code = '';
+        $country_flag = '';
+
+        if ($ip !== '127.0.0.1' && $ip !== '::1') { 
+            $api_url = "http://ip-api.com/json/{$ip}?fields=status,proxy,hosting,city,country,countryCode";
             $ch = curl_init($api_url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // 3s timeout to fail open
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             $response = curl_exec($ch);
             curl_close($ch);
 
@@ -77,25 +131,52 @@ if ($action === 'submit') {
                         echo json_encode(['success' => false, 'message' => 'VPNs and Proxies are not allowed to submit leads.']);
                         exit;
                     }
+                    $city = $geo['city'] ?? '';
+                    $country = $geo['country'] ?? '';
+                    $country_code = $geo['countryCode'] ?? '';
+                    
+                    // Convert Country Code to Emoji Flag
+                    if (!empty($country_code)) {
+                        $country_flag = implode('', array_map(function($char) {
+                            return mb_chr(mb_ord($char) + 127397);
+                        }, str_split(strtoupper($country_code))));
+                    }
                 }
             }
         }
 
         try {
-            $stmt = $pdo->prepare("INSERT INTO leads (name, phone, email, bhk, message, source, status) VALUES (:name, :phone, :email, :bhk, :message, :source, 'New')");
+            $stmt = $pdo->prepare("
+                INSERT INTO leads (
+                    name, phone, email, bhk, message, source, status, 
+                    ip_address, city, country, country_code, country_flag, 
+                    device_type, browser, user_agent, 
+                    utm_source, utm_medium, utm_campaign, utm_term, utm_content, 
+                    refer_url, page_url
+                ) VALUES (
+                    :name, :phone, :email, :bhk, :message, :source, 'New',
+                    :ip_address, :city, :country, :country_code, :country_flag,
+                    :device_type, :browser, :user_agent,
+                    :utm_source, :utm_medium, :utm_campaign, :utm_term, :utm_content,
+                    :refer_url, :page_url
+                )
+            ");
+            
             $stmt->execute([
-                ':name' => $name,
-                ':phone' => $phone,
-                ':email' => $email,
-                ':bhk' => $bhk,
-                ':message' => $message,
-                ':source' => $source
+                ':name' => $name, ':phone' => $phone, ':email' => $email,
+                ':bhk' => $bhk, ':message' => $message, ':source' => $source,
+                ':ip_address' => $ip, ':city' => $city, ':country' => $country, 
+                ':country_code' => $country_code, ':country_flag' => $country_flag,
+                ':device_type' => $device_type, ':browser' => $browser, ':user_agent' => $user_agent,
+                ':utm_source' => $utm_source, ':utm_medium' => $utm_medium, ':utm_campaign' => $utm_campaign,
+                ':utm_term' => $utm_term, ':utm_content' => $utm_content,
+                ':refer_url' => $refer_url, ':page_url' => $page_url
             ]);
 
             // Send email notification via SMTP (PHPMailer)
             $to_emails = getenv('ADMIN_EMAIL');
             $subject = getenv('EMAIL_SUBJECT');
-            $emailBody = "New Lead from Sumadhura Edition:\n\nName: $name\nPhone: $phone\nEmail: $email\nInterest: $bhk\nSource: $source\nMessage:\n$message";
+            $emailBody = "New Lead from Sumadhura Edition:\n\nName: $name\nPhone: $phone\nEmail: $email\nInterest: $bhk\nSource: $source\nMessage:\n$message\n\n--- Tracking Data ---\nIP: $ip\nGeo: $city, $country\nDevice: $device_type\nBrowser: $browser\nUTM Source: $utm_source\nCampaign: $utm_campaign\nReferrer: $refer_url";
 
             if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
                 $smtp_host = getenv('SMTP_HOST');

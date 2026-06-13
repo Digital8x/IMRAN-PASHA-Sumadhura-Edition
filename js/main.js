@@ -263,6 +263,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (itiObj) {
                 formData.set('phone', itiObj.iti.getNumber());
             }
+
+            // Capture Advanced Lead Context (UTMs, URL, Referrer)
+            const urlParams = new URLSearchParams(window.location.search);
+            formData.append('utm_source', urlParams.get('utm_source') || '');
+            formData.append('utm_medium', urlParams.get('utm_medium') || '');
+            formData.append('utm_campaign', urlParams.get('utm_campaign') || '');
+            formData.append('utm_term', urlParams.get('utm_term') || '');
+            formData.append('utm_content', urlParams.get('utm_content') || '');
+            formData.append('refer_url', document.referrer || '');
+            formData.append('page_url', window.location.href);
+            formData.append('project', 'Sumadhura Edition');
             
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sending...';
