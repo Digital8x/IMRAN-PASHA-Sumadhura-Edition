@@ -240,7 +240,7 @@ if ($action === 'submit') {
             echo json_encode(['success' => true, 'message' => 'Thank you! Our expert will contact you within 2 hours.']);
         } catch(PDOException $e) {
             error_log("Database Error: " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            echo json_encode(['success' => false, 'message' => 'DB Error: ' . $e->getMessage()]);
         }
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
