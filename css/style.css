@@ -1107,7 +1107,7 @@ img {
 
 @media (max-width: 767px) {
     .floating-whatsapp {
-        bottom: 80px;
+        display: none;
     }
 
     .mobile-bottom-bar {
