@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sumadhura Edition | Admin Login</title>
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--color-bg);
+            margin: 0;
+        }
+        .login-card {
+            background: var(--color-white);
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-subtle);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-card img {
+            height: 40px;
+            margin: 0 auto 2rem;
+        }
+        .login-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-family: var(--font-body);
+            font-weight: 600;
+        }
+        .error-msg {
+            color: #d32f2f;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .shake {
+            animation: shake 0.4s;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card" id="login-card">
+        <img src="../images/logo.png" alt="Logo" onerror="this.outerHTML='<h1 class=\'logo-text\'>Sumadhura Admin</h1>'">
+        <h2>Admin Portal</h2>
+        <div class="error-msg" id="login-error">Invalid username or password.</div>
+        <form id="login-form" class="main-form">
+            <div class="form-group">
+                <input type="text" id="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-black-pill full-width">Login to Dashboard</button>
+        </form>
+    </div>
+
+    <script src="../js/admin.js"></script>
+</body>
+</html>

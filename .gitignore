@@ -1,0 +1,9 @@
+# Secrets
+backend/.env
+.env
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log

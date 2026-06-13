@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Sumadhura Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body { background-color: var(--color-bg); }
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: var(--color-cream);
+            border-right: 1px solid var(--color-border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-logo {
+            margin-bottom: 3rem;
+        }
+        .sidebar-logo img {
+            height: 30px;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .nav-item {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: var(--color-white);
+            color: var(--color-accent);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .nav-item i { font-size: 1.2rem; }
+        .logout-btn {
+            margin-top: auto;
+            color: #d32f2f;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+        
+        .header-title {
+            font-size: 1.8rem;
+            font-family: var(--font-body);
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background: var(--color-white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+        }
+        .metric-card h4 {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            font-family: var(--font-body);
+            margin-bottom: 0.5rem;
+        }
+        .metric-card .num {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filters-bar input, .filters-bar select {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-family: var(--font-body);
+            outline: none;
+        }
+        .filters-bar input:focus, .filters-bar select:focus {
+            border-color: var(--color-accent);
+        }
+        .export-btn {
+            margin-left: auto;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            background: var(--color-white);
+            border: 1px solid var(--color-accent);
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .table-container {
+            background: var(--color-white);
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        th, td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        th {
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+            background: #FAFAFA;
+        }
+        tr:hover {
+            background-color: #FAFAFA;
+        }
+        .status-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-new { background: #e3f2fd; color: #1976d2; }
+        .status-called { background: #e8f5e9; color: #388e3c; }
+        .status-closed { background: #eeeeee; color: #616161; }
+        
+        .actions-flex {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .action-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.2rem;
+            border-radius: 4px;
+        }
+        .action-icon:hover { background: #f0f0f0; }
+        .icon-green { color: #388e3c; }
+        .icon-gray { color: #616161; }
+        .icon-red { color: #d32f2f; }
+        
+        .message-row {
+            display: none;
+            background: #FAFAFA;
+        }
+        .message-row td {
+            padding: 1rem 1.5rem;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="../images/logo.png" alt="Logo" onerror="this.outerHTML='<h2 class=\'logo-text\'>Sumadhura</h2>'">
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-filter="All"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+                <div class="nav-item" data-filter="2 BHK"><i class="ti ti-home-2"></i> 2 BHK Enquiries</div>
+                <div class="nav-item" data-filter="3 BHK"><i class="ti ti-home-2"></i> 3 BHK Enquiries</div>
+                <div class="nav-item" data-filter="4 BHK"><i class="ti ti-home-2"></i> 4 BHK Enquiries</div>
+                <div class="nav-item logout-btn" id="logout-btn"><i class="ti ti-logout"></i> Logout</div>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <h1 class="header-title">Leads Dashboard</h1>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h4>Total Leads</h4>
+                    <div class="num" id="metric-total">0</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Today's Leads</h4>
+                    <div class="num" id="metric-today">0</div>
+                </div>
+                <div class="metric-card">
+                    <h4>2 BHK Enquiries</h4>
+                    <div class="num" id="metric-2bhk">0</div>
+                </div>
+                <div class="metric-card">
+                    <h4>3/4 BHK Enquiries</h4>
+                    <div class="num" id="metric-34bhk">0</div>
+                </div>
+            </div>
+            
+            <div class="filters-bar">
+                <input type="text" id="search-input" placeholder="Search name, phone, email...">
+                <select id="status-filter">
+                    <option value="All">All Statuses</option>
+                    <option value="New">New</option>
+                    <option value="Called">Called</option>
+                    <option value="Closed">Closed</option>
+                </select>
+                <button class="export-btn" id="export-btn"><i class="ti ti-download"></i> Export CSV</button>
+            </div>
+            
+            <div class="table-container">
+                <table id="leads-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>BHK</th>
+                            <th>Source</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leads-tbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/admin.js"></script>
+</body>
+</html>
