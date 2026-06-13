@@ -122,14 +122,17 @@ if ($action === 'submit') {
                         // Recipients
                         $mail->setFrom($smtp_user, 'Sumadhura Edition');
                         
-                        // Support multiple comma-separated emails
+                        // Use the sender email as the primary 'To' address to hide the real recipients
+                        $mail->addAddress($smtp_user, 'Admin Team');
+                        
+                        // Support multiple comma-separated emails (added as BCC to hide them)
                         $valid_recipients = 0;
                         if (!empty($to_emails) && is_string($to_emails)) {
                             $recipients = explode(',', $to_emails);
                             foreach ($recipients as $recipient) {
                                 $recipient = trim($recipient);
                                 if (!empty($recipient) && filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
-                                    $mail->addAddress($recipient);
+                                    $mail->addBCC($recipient);
                                     $valid_recipients++;
                                 }
                             }
