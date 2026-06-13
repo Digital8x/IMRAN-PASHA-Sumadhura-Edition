@@ -1670,6 +1670,13 @@ img {
     .location-map-visual {
         margin-left: -1.5rem;
         margin-right: -1.5rem;
+        overflow: hidden; /* Prevent horizontal scroll */
+    }
+
+    .stylized-map {
+        width: 115%;
+        max-width: 115%;
+        transform: translateX(-8%); /* Shift left to fix right-cutoff and left-blank gap */
     }
 
     .category-btn {
