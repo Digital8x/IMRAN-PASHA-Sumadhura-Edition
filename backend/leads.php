@@ -1,6 +1,13 @@
 <?php
 require_once 'db_config.php';
 
+// Include Composer autoloader
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
+
+use PHPMailer\PHPMailer\PHPMailer;
+
 header('Content-Type: application/json');
 
 session_start();
@@ -85,18 +92,51 @@ if ($action === 'submit') {
                 ':source' => $source
             ]);
 
-            // Attempt to send email notification (simple mail for now)
-            $to = getenv('ADMIN_EMAIL');
+            // Send email notification via SMTP (PHPMailer)
+            $to_emails = getenv('ADMIN_EMAIL');
             $subject = getenv('EMAIL_SUBJECT');
             $emailBody = "New Lead from Sumadhura Edition:\n\nName: $name\nPhone: $phone\nEmail: $email\nInterest: $bhk\nSource: $source\nMessage:\n$message";
-            $headers = "From: noreply@sumadhuraedition.com";
 
-            // If we're on a real server this works, locally it might fail so we suppress errors with @
-            @mail($to, $subject, $emailBody, $headers);
+            if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+                $mail = new PHPMailer(true);
+                try {
+                    // Server settings
+                    $mail->isSMTP();
+                    $mail->Host       = getenv('SMTP_HOST');
+                    $mail->SMTPAuth   = true;
+                    $mail->Username   = getenv('SMTP_USER');
+                    $mail->Password   = getenv('SMTP_PASS');
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port       = getenv('SMTP_PORT') ?: 587;
+
+                    // Recipients
+                    $mail->setFrom(getenv('SMTP_USER'), 'Sumadhura Edition');
+                    
+                    // Support multiple comma-separated emails
+                    $recipients = explode(',', $to_emails);
+                    foreach ($recipients as $recipient) {
+                        $mail->addAddress(trim($recipient));
+                    }
+
+                    // Content
+                    $mail->isHTML(false);
+                    $mail->Subject = $subject;
+                    $mail->Body    = $emailBody;
+
+                    $mail->send();
+                } catch (\Exception $e) {
+                    // Silently fail so user still sees success message (lead is in DB)
+                    error_log("Mailer Error: {$mail->ErrorInfo}");
+                }
+            } else {
+                // Fallback to basic mail if Composer isn't run yet
+                $headers = "From: " . getenv('SMTP_USER');
+                @mail($to_emails, $subject, $emailBody, $headers);
+            }
 
             echo json_encode(['success' => true, 'message' => 'Thank you! Our expert will contact you within 2 hours.']);
         } catch(PDOException $e) {
-            echo json_encode(['success' => false, 'message' => 'Database error.']);
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
         }
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
