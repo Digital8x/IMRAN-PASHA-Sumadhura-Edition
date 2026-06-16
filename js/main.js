@@ -220,11 +220,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if(modalClose && leadModal) {
-        modalClose.addEventListener('click', () => leadModal.classList.remove('active'));
+        modalClose.addEventListener('click', () => {
+            leadModal.classList.remove('active');
+            sessionStorage.setItem('popup_closed', 'true');
+        });
         // Close on outside click
         leadModal.addEventListener('click', (e) => {
-            if(e.target === leadModal) leadModal.classList.remove('active');
+            if(e.target === leadModal) {
+                leadModal.classList.remove('active');
+                sessionStorage.setItem('popup_closed', 'true');
+            }
         });
+    }
+
+    // Auto-trigger Popup Form on Load
+    if (leadModal && localStorage.getItem('leads_submitted') !== 'true' && !sessionStorage.getItem('popup_closed')) {
+        setTimeout(() => {
+            if (!leadModal.classList.contains('active')) {
+                if(modalSourceInput) modalSourceInput.value = "Auto Popup Form";
+                const bhkSelect = document.getElementById('modal-bhk-select');
+                if(bhkSelect) bhkSelect.value = '2 BHK';
+                leadModal.classList.add('active');
+            }
+        }, 5000); // 5 seconds delay
     }
 
     // Initialize intl-tel-input for all phone fields
